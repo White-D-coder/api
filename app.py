@@ -107,14 +107,23 @@ students = [
 ]
 
 
-# Get all students or filter by min marks
 @app.route('/students', methods=['GET'])
 def get_students():
     min_marks = request.args.get('minMarks', type=int)
     if min_marks is not None:
-        filtered = [s for s in students if s['marks'] >= min_marks]
+        # Filter students based on average marks
+        filtered = []
+        for s in students:
+            total_marks = sum(
+                sum(subject_marks.values()) for subject_marks in s['marks'].values()
+            )
+            num_subjects = sum(len(subject_marks) for subject_marks in s['marks'].values())
+            avg_marks = total_marks / num_subjects
+            if avg_marks >= min_marks:
+                filtered.append(s)
         return jsonify(filtered), 200
     return jsonify(students), 200
+
 
 # Get student by roll number
 @app.route('/students/<int:roll_no>', methods=['GET'])
